@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -70,6 +73,7 @@ private fun TechnicalLabel(text: String, color: Color = Muted) {
 
 @Composable
 fun HomeScreen() {
+    var selectedTab by rememberSaveable { mutableStateOf("Головна") }
     var hidden by rememberSaveable { mutableStateOf(false) }
     var action by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedCard by rememberSaveable { mutableStateOf<String?>(null) }
@@ -91,6 +95,22 @@ fun HomeScreen() {
                 }
             }
             item {
+                SectionTabs(selectedTab = selectedTab, onSelect = { selectedTab = it })
+            }
+            if (selectedTab == "Послуги") {
+                item { Text("Послуги", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
+                item { TechnicalLabel("ЩОДЕННІ ПЛАТЕЖІ / ДЕМО") }
+                items(listOf("Мобільний зв’язок", "Комунальні послуги", "Інтернет", "Платіж за IBAN")) { service ->
+                    Card(onClick = { action = service }, colors = CardDefaults.cardColors(containerColor = Color(0xFFE7E5DF)), shape = RoundedCornerShape(20.dp)) {
+                        Row(Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text(service, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Orange)
+                        }
+                    }
+                }
+            }
+            if (selectedTab != "Послуги") {
+            item {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     TechnicalLabel("ТВОЇ ГРОШІ. ТВІЙ РИТМ.")
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -104,6 +124,8 @@ fun HomeScreen() {
                     }
                 }
             }
+            }
+            if (selectedTab == "Головна") {
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     QuickAction("Поповнити", Icons.Default.Add, Modifier.weight(1f), true) { action = "Поповнити" }
@@ -111,6 +133,8 @@ fun HomeScreen() {
                     QuickAction("Сплатити", Icons.Default.ShoppingCart, Modifier.weight(1f)) { action = "Сплатити" }
                 }
             }
+            }
+            if (selectedTab != "Послуги") {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -146,6 +170,19 @@ fun HomeScreen() {
                     }
                 }
             }
+            }
+            if (selectedTab == "Гаманець") {
+                item {
+                    OutlinedCard(shape = RoundedCornerShape(20.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            TechnicalLabel("РАХУНКИ / UAH")
+                            Text("2 картки у гривні", fontWeight = FontWeight.SemiBold)
+                            Text("Обидві картки демонстраційні. Реквізити та банківський API поки не підключено.", fontSize = 14.sp, color = Muted)
+                        }
+                    }
+                }
+            }
+            if (selectedTab == "Головна") {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -173,9 +210,10 @@ fun HomeScreen() {
                     HorizontalDivider(color = Color(0xFFDEDBD3))
                 }
             }
+            }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TechnicalLabel("SIZZLE / 0.2.0")
+                    TechnicalLabel("SIZZLE / 0.2.1")
                     TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
                 }
             }
@@ -186,6 +224,25 @@ fun HomeScreen() {
         AlertDialog(onDismissRequest = { selectedCard = null }, title = { Text("Картка •••• $number") },
             text = { Text("Демонстраційна картка Sizzle у гривні. Реквізити вигадані. Банківський API не підключено.") },
             confirmButton = { TextButton(onClick = { selectedCard = null }) { Text("Зрозуміло") } })
+    }
+}
+
+@Composable
+private fun SectionTabs(selectedTab: String, onSelect: (String) -> Unit) {
+    Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf("Головна", "Послуги", "Гаманець").forEach { tab ->
+            val selected = selectedTab == tab
+            Surface(
+                modifier = Modifier.weight(1f).selectable(selected = selected, role = Role.Tab, onClick = { onSelect(tab) }),
+                shape = CircleShape,
+                color = if (selected) Orange else Color(0xFFE7E5DF),
+                contentColor = if (selected) Color.White else Ink
+            ) {
+                Box(Modifier.heightIn(min = 48.dp).padding(horizontal = 6.dp, vertical = 12.dp), contentAlignment = Alignment.Center) {
+                    Text(tab, fontSize = 13.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
+                }
+            }
+        }
     }
 }
 
