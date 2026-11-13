@@ -127,7 +127,7 @@ fun HomeScreen() {
                 item {
                     Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Sizzle 0.4.2", fontWeight = FontWeight.Bold)
+                            Text("Sizzle 0.5.0", fontWeight = FontWeight.Bold)
                             Text("Демонстраційний застосунок. Українська мова, гривня, темне оформлення. Перевірка оновлень — кнопкою в шапці.", color = Muted, fontSize = 14.sp)
                         }
                     }
@@ -149,17 +149,24 @@ fun HomeScreen() {
                     }
                 }
             }
-            if (section == "Головна" && selectedTab == "Послуги") {
-                item { Text("Послуги", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
-                item { TechnicalLabel("ЩОДЕННІ ПЛАТЕЖІ / ДЕМО") }
-                items(listOf("Мобільний зв’язок", "Комунальні послуги", "Інтернет", "Платіж за IBAN")) { service ->
-                    Card(onClick = { action = service }, colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
-                        Row(Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(service, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Orange)
+            if (section == "Головна" && selectedTab == "Криптогаманець") {
+                item {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Криптогаманець", fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                        TextButton(onClick = { hidden = !hidden }) { Text(if (hidden) "Показати" else "Сховати", fontSize = 12.sp) }
+                    }
+                }
+                item { TechnicalLabel("ДЕМО-АКТИВИ / БЕЗ РЕАЛЬНИХ КОШТІВ", Orange) }
+                items(listOf(Triple("Bitcoin", "BTC", "0,012400 BTC"), Triple("Ethereum", "ETH", "0,350000 ETH"), Triple("Tether", "USDT", "250,00 USDT"))) { (name, ticker, balance) ->
+                    Card(shape = RoundedCornerShape(24.dp), border = BorderStroke(1.dp, Outline), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                        Row(Modifier.fillMaxWidth().padding(18.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Box(Modifier.size(42.dp).background(Color(0xFF63351F), CircleShape), contentAlignment = Alignment.Center) { Text(ticker.take(1), color = Orange, fontWeight = FontWeight.Bold, fontSize = 20.sp) }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(name, fontWeight = FontWeight.SemiBold); TechnicalLabel(ticker) }
+                            Text(if (hidden) "••••" else balance, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
+                item { Text("Тестові залишки. Криптомережі не підключено. Реальних адрес, ключів та переказів немає.", color = Muted, fontSize = 13.sp) }
             }
             if (section == "Мої картки" || (section == "Головна" && selectedTab == "Гаманець")) {
             item {
@@ -207,6 +214,30 @@ fun HomeScreen() {
                 }
             }
             }
+            if (section == "Головна" && selectedTab == "Гаманець") {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Додатково", fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                            TechnicalLabel("ПОСЛУГИ →")
+                        }
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            items(listOf("Мобільний зв’язок" to "01 / ЗВ’ЯЗОК", "Комунальні послуги" to "02 / ДІМ", "Інтернет" to "03 / МЕРЕЖА", "Платіж за IBAN" to "04 / ПЛАТЕЖІ")) { (service, detail) ->
+                                Card(onClick = { action = service }, modifier = Modifier.width(160.dp).heightIn(min = 136.dp), shape = RoundedCornerShape(24.dp), border = BorderStroke(1.dp, Outline), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                            TechnicalLabel(detail, Orange)
+                                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Orange, modifier = Modifier.size(18.dp))
+                                        }
+                                        Text(service, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                        Text("Демо-платіж", color = Muted, fontSize = 11.sp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (section == "Мої картки") {
                 item {
                     OutlinedCard(shape = RoundedCornerShape(20.dp)) {
@@ -220,7 +251,7 @@ fun HomeScreen() {
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TechnicalLabel("SIZZLE / 0.4.2")
+                    TechnicalLabel("SIZZLE / 0.5.0")
                     TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
                 }
             }
@@ -301,7 +332,7 @@ private fun NavigationIsland(selected: String, onSelect: (String) -> Unit, modif
 @Composable
 private fun SectionTabs(selectedTab: String, onSelect: (String) -> Unit) {
     Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("Гаманець", "Послуги").forEach { tab ->
+        listOf("Гаманець", "Криптогаманець").forEach { tab ->
             val selected = selectedTab == tab
             Surface(
                 modifier = Modifier.weight(1f).selectable(selected = selected, role = Role.Tab, onClick = { onSelect(tab) }),
