@@ -20,6 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -79,14 +83,16 @@ private fun TechnicalLabel(text: String, color: Color = Muted) {
 
 @Composable
 fun HomeScreen() {
-    var selectedTab by rememberSaveable { mutableStateOf("Головна") }
+    var section by rememberSaveable { mutableStateOf("Головна") }
+    var selectedTab by rememberSaveable { mutableStateOf("Гаманець") }
     var hidden by rememberSaveable { mutableStateOf(false) }
     var action by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedCard by rememberSaveable { mutableStateOf<String?>(null) }
     Surface(Modifier.fillMaxSize(), color = Concrete) {
+        Box(Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.safeDrawingPadding(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 32.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
@@ -102,10 +108,48 @@ fun HomeScreen() {
                 }
                 }
             }
-            item {
-                SectionTabs(selectedTab = selectedTab, onSelect = { selectedTab = it })
+            if (section == "Головна") {
+                item { SectionTabs(selectedTab = selectedTab, onSelect = { selectedTab = it }) }
             }
-            if (selectedTab == "Послуги") {
+            if (section == "Налаштування") {
+                item { Text("Налаштування", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
+                item {
+                    Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                        Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Text("Приховувати суми", fontWeight = FontWeight.SemiBold)
+                                Text("На картках та в історії", fontSize = 12.sp, color = Muted)
+                            }
+                            Switch(checked = hidden, onCheckedChange = { hidden = it })
+                        }
+                    }
+                }
+                item {
+                    Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Sizzle 0.4.2", fontWeight = FontWeight.Bold)
+                            Text("Демонстраційний застосунок. Українська мова, гривня, темне оформлення. Перевірка оновлень — кнопкою в шапці.", color = Muted, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
+            if (section == "Підтримка") {
+                item { Text("Підтримка", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
+                items(listOf(
+                    "Чи справжні кошти?" to "Ні. Картки, баланс та операції вигадані. Реальні платежі не виконуються.",
+                    "Де знайти історію?" to "Натисніть на картку — її операції відкриються в нижній панелі.",
+                    "Як оновити Sizzle?" to "Натисніть «Оновлення» у шапці. Після завантаження підтвердьте встановлення в Android.",
+                    "Зв’язок із підтримкою" to "Канал підтримки ще не підключено. Банківський API не підключено."
+                )) { (question, answer) ->
+                    Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Panel)) {
+                        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(question, fontWeight = FontWeight.SemiBold)
+                            Text(answer, color = Muted, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
+            if (section == "Головна" && selectedTab == "Послуги") {
                 item { Text("Послуги", fontSize = 28.sp, fontWeight = FontWeight.Bold) }
                 item { TechnicalLabel("ЩОДЕННІ ПЛАТЕЖІ / ДЕМО") }
                 items(listOf("Мобільний зв’язок", "Комунальні послуги", "Інтернет", "Платіж за IBAN")) { service ->
@@ -117,7 +161,7 @@ fun HomeScreen() {
                     }
                 }
             }
-            if (selectedTab != "Послуги") {
+            if (section == "Мої картки" || (section == "Головна" && selectedTab == "Гаманець")) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -154,7 +198,7 @@ fun HomeScreen() {
                 }
             }
             }
-            if (selectedTab == "Головна") {
+            if (section == "Головна" && selectedTab == "Гаманець") {
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     QuickAction("Поповнити", Icons.Default.Add, Modifier.weight(1f), true) { action = "Поповнити" }
@@ -163,7 +207,7 @@ fun HomeScreen() {
                 }
             }
             }
-            if (selectedTab == "Гаманець") {
+            if (section == "Мої картки") {
                 item {
                     OutlinedCard(shape = RoundedCornerShape(20.dp)) {
                         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -176,10 +220,12 @@ fun HomeScreen() {
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TechnicalLabel("SIZZLE / 0.4.1")
+                    TechnicalLabel("SIZZLE / 0.4.2")
                     TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
                 }
             }
+        }
+        NavigationIsland(section, onSelect = { section = it }, modifier = Modifier.align(Alignment.BottomStart).navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 12.dp))
         }
     }
     action?.let { title -> DemoActionDialog(title) { action = null } }
@@ -236,9 +282,26 @@ private fun CardHistorySheet(card: DemoCard, hidden: Boolean, onDismiss: () -> U
 }
 
 @Composable
+private fun NavigationIsland(selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+    val sections = listOf("Головна" to Icons.Default.Home, "Мої картки" to Icons.Default.AccountBox, "Налаштування" to Icons.Default.Settings, "Підтримка" to Icons.Default.Info)
+    Surface(modifier, shape = CircleShape, color = Panel, border = BorderStroke(1.dp, Outline), shadowElevation = 12.dp) {
+        Row(Modifier.background(Brush.verticalGradient(listOf(PanelRaised, Panel))).padding(6.dp).selectableGroup(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            sections.forEach { (label, icon) ->
+                val active = label == selected
+                Surface(modifier = Modifier.size(50.dp).selectable(selected = active, role = Role.Tab, onClick = { onSelect(label) }), shape = CircleShape,
+                    color = if (active) Color(0xFF63351F) else Color.Transparent,
+                    contentColor = if (active) BrightOrange else Muted) {
+                    Box(contentAlignment = Alignment.Center) { Icon(icon, contentDescription = label, modifier = Modifier.size(24.dp)) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SectionTabs(selectedTab: String, onSelect: (String) -> Unit) {
     Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf("Головна", "Послуги", "Гаманець").forEach { tab ->
+        listOf("Гаманець", "Послуги").forEach { tab ->
             val selected = selectedTab == tab
             Surface(
                 modifier = Modifier.weight(1f).selectable(selected = selected, role = Role.Tab, onClick = { onSelect(tab) }),
@@ -257,19 +320,24 @@ private fun SectionTabs(selectedTab: String, onSelect: (String) -> Unit) {
 
 @Composable
 private fun QuickAction(label: String, icon: ImageVector, modifier: Modifier, accent: Boolean = false, onClick: () -> Unit) {
-    FilledTonalButton(
+    Card(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 48.dp),
-        shape = CircleShape,
-        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp),
-        colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = if (accent) BrightOrange else PanelRaised,
-            contentColor = if (accent) Color(0xFF291100) else Ink
+        modifier = modifier.heightIn(min = 104.dp),
+        shape = RoundedCornerShape(22.dp),
+        border = BorderStroke(1.dp, if (accent) Color(0xFFAC5930) else Outline),
+        colors = CardDefaults.cardColors(
+            containerColor = if (accent) Color(0xFF38291F) else Panel,
+            contentColor = Ink
         )
     ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
-        Spacer(Modifier.width(4.dp))
-        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
+        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Surface(shape = RoundedCornerShape(10.dp), color = if (accent) BrightOrange else PanelRaised, contentColor = if (accent) Color(0xFF291100) else Orange) {
+                Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                }
+            }
+            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 
