@@ -60,14 +60,14 @@ class MainActivity : ComponentActivity() {
 }
 
 data class DemoCard(val name: String, val number: String, val balance: String)
-data class Operation(val title: String, val category: String, val amount: String, val incoming: Boolean = false)
+data class Operation(val title: String, val category: String, val amount: String, val incoming: Boolean = false, val cardNumber: String = "4821")
 object DemoData {
     val cards = listOf(DemoCard("Щоденна", "4821", "42 850,00 ₴"), DemoCard("Віртуальна", "9037", "8 400,00 ₴"))
     val operations = listOf(
         Operation("Сільпо", "Сьогодні, 12:48 · Продукти", "− 842,50 ₴"),
         Operation("Олексій К.", "Сьогодні, 10:16 · Переказ", "+ 2 000,00 ₴", true),
-        Operation("ONE LOVE", "Сьогодні, 09:05 · Кава", "− 125,00 ₴"),
-        Operation("Київстар", "Учора, 18:32 · Мобільний зв’язок", "− 250,00 ₴"),
+        Operation("ONE LOVE", "Сьогодні, 09:05 · Кава", "− 125,00 ₴", cardNumber = "9037"),
+        Operation("Київстар", "Учора, 18:32 · Мобільний зв’язок", "− 250,00 ₴", cardNumber = "9037"),
         Operation("Зарплата", "Учора, 09:00 · Надходження", "+ 32 000,00 ₴", true)
     )
 }
@@ -119,37 +119,10 @@ fun HomeScreen() {
             }
             if (selectedTab != "Послуги") {
             item {
-                Surface(shape = RoundedCornerShape(30.dp), color = Panel, border = BorderStroke(1.dp, Color(0xFF3B3E48))) {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TechnicalLabel("ТВОЇ ГРОШІ. ТВІЙ РИТМ.", Orange)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Загальний баланс", style = MaterialTheme.typography.titleMedium)
-                        TextButton(onClick = { hidden = !hidden }, contentPadding = PaddingValues(horizontal = 8.dp)) { Text(if (hidden) "Показати" else "Сховати", fontSize = 12.sp) }
-                    }
-                    Text(if (hidden) "••• ••• ₴" else "51 250,00 ₴", fontSize = 36.sp, lineHeight = 42.sp, letterSpacing = (-1.5).sp, fontWeight = FontWeight.Bold)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                        Box(Modifier.size(6.dp).background(Orange, CircleShape))
-                        Text("Українська гривня · 2 картки", fontSize = 12.sp, color = Muted)
-                    }
-                }
-                }
-            }
-            }
-            if (selectedTab == "Головна") {
-            item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    QuickAction("Поповнити", Icons.Default.Add, Modifier.weight(1f), true) { action = "Поповнити" }
-                    QuickAction("Переказати", Icons.AutoMirrored.Filled.Send, Modifier.weight(1f)) { action = "Переказати" }
-                    QuickAction("Сплатити", Icons.Default.ShoppingCart, Modifier.weight(1f)) { action = "Сплатити" }
-                }
-            }
-            }
-            if (selectedTab != "Послуги") {
-            item {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Картки", fontSize = 23.sp, fontWeight = FontWeight.Bold)
-                        TechnicalLabel("02 / UAH")
+                        TextButton(onClick = { hidden = !hidden }) { Text(if (hidden) "Показати суми" else "Сховати суми", fontSize = 12.sp) }
                     }
                     BoxWithConstraints {
                         val cardWidth = minOf(maxWidth - 18.dp, 340.dp)
@@ -181,6 +154,15 @@ fun HomeScreen() {
                 }
             }
             }
+            if (selectedTab == "Головна") {
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    QuickAction("Поповнити", Icons.Default.Add, Modifier.weight(1f), true) { action = "Поповнити" }
+                    QuickAction("Переказати", Icons.AutoMirrored.Filled.Send, Modifier.weight(1f)) { action = "Переказати" }
+                    QuickAction("Сплатити", Icons.Default.ShoppingCart, Modifier.weight(1f)) { action = "Сплатити" }
+                }
+            }
+            }
             if (selectedTab == "Гаманець") {
                 item {
                     OutlinedCard(shape = RoundedCornerShape(20.dp)) {
@@ -192,17 +174,45 @@ fun HomeScreen() {
                     }
                 }
             }
-            if (selectedTab == "Головна") {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Рух коштів", fontSize = 23.sp, fontWeight = FontWeight.Bold)
-                        TechnicalLabel("ЛИСТОПАД")
-                    }
-                    TechnicalLabel("ОСТАННІ ОПЕРАЦІЇ / ДЕМО")
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TechnicalLabel("SIZZLE / 0.4.1")
+                    TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
                 }
             }
-            items(DemoData.operations, key = { it.title }) { operation ->
+        }
+    }
+    action?.let { title -> DemoActionDialog(title) { action = null } }
+    selectedCard?.let { number ->
+        val card = DemoData.cards.first { it.number == number }
+        CardHistorySheet(card, hidden, onDismiss = { selectedCard = null })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CardHistorySheet(card: DemoCard, hidden: Boolean, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, containerColor = Panel,
+        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) {
+        LazyColumn(Modifier.fillMaxWidth().heightIn(max = 640.dp), contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(card.name, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        TechnicalLabel("КАРТКА •••• ${card.number} / UAH", Orange)
+                    }
+                    TextButton(onClick = onDismiss) { Text("Закрити") }
+                }
+            }
+            item { Text(if (hidden) "••• ••• ₴" else card.balance, fontSize = 32.sp, fontWeight = FontWeight.SemiBold) }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Рух коштів", fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                    TechnicalLabel("ЛИСТОПАД / ТЕСТОВІ ОПЕРАЦІЇ")
+                }
+            }
+            items(DemoData.operations.filter { it.cardNumber == card.number }, key = { it.title }) { operation ->
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Surface(shape = RoundedCornerShape(14.dp), color = if (operation.incoming) Color(0xFF63351F) else Panel, modifier = Modifier.size(44.dp)) {
@@ -220,20 +230,8 @@ fun HomeScreen() {
                     HorizontalDivider(color = Color(0xFF3B3E48))
                 }
             }
-            }
-            item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TechnicalLabel("SIZZLE / 0.4.0")
-                    TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
-                }
-            }
+            item { Text("Усі дані вигадані. Банківський API не підключено.", color = Muted, fontSize = 12.sp) }
         }
-    }
-    action?.let { title -> DemoActionDialog(title) { action = null } }
-    selectedCard?.let { number ->
-        AlertDialog(onDismissRequest = { selectedCard = null }, title = { Text("Картка •••• $number") },
-            text = { Text("Демонстраційна картка Sizzle у гривні. Реквізити вигадані. Банківський API не підключено.") },
-            confirmButton = { TextButton(onClick = { selectedCard = null }) { Text("Зрозуміло") } })
     }
 }
 
@@ -259,12 +257,19 @@ private fun SectionTabs(selectedTab: String, onSelect: (String) -> Unit) {
 
 @Composable
 private fun QuickAction(label: String, icon: ImageVector, modifier: Modifier, accent: Boolean = false, onClick: () -> Unit) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilledTonalIconButton(onClick = onClick, modifier = Modifier.fillMaxWidth().height(58.dp), shape = RoundedCornerShape(24.dp),
-            colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = if (accent) BrightOrange else PanelRaised, contentColor = if (accent) Color(0xFF291100) else Ink)) {
-            Icon(icon, contentDescription = label, modifier = Modifier.size(24.dp))
-        }
-        Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 48.dp),
+        shape = CircleShape,
+        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp),
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = if (accent) BrightOrange else PanelRaised,
+            contentColor = if (accent) Color(0xFF291100) else Ink
+        )
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(label, fontSize = 11.sp, fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false)
     }
 }
 
