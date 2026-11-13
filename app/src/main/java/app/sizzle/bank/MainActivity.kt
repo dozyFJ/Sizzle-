@@ -91,7 +91,7 @@ fun HomeScreen() {
                         }
                         Text("sizzle", fontSize = 29.sp, letterSpacing = (-1).sp, fontWeight = FontWeight.Black)
                     }
-                    AssistChip(onClick = { action = "Демо-режим" }, label = { TechnicalLabel("ДЕМО / UA", Ink) })
+                    UpdateControl()
                 }
             }
             item {
@@ -213,7 +213,7 @@ fun HomeScreen() {
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TechnicalLabel("SIZZLE / 0.2.1")
+                    TechnicalLabel("SIZZLE / 0.3.0")
                     TechnicalLabel("УСІ ДАНІ ВИГАДАНІ")
                 }
             }
